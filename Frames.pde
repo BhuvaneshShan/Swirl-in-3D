@@ -20,9 +20,9 @@ void init(){
 
 void customizedInit(){
   initialPoint = new pt(-200, 0, 0);
-  finalPoint = new pt(200,200,200);
+  finalPoint = new pt(200,0,200);
   initialFrame =  new FR(new vec(1.0f,-1.0f,0), new vec(1.0f,1.0f,0), new vec(0,0,1),initialPoint); //3 -5 5 5 //1 -1 1 1
-  finalFrame =  new FR(new vec(-1.0f,1.0f,0), new vec(1.0f,1.0f,0), new vec(0,0,1),finalPoint); //5 3 -3 5 //1 1 -1 1
+  finalFrame =  new FR(new vec(1.0f,1.0f,0), new vec(-1.0f,1.0f,0), new vec(0,0,1),finalPoint); //5 3 -3 5 //1 1 -1 1
   middleFrame = new FR();
   ballInitialFrame = new Ball(initialFrame);
   ballFinalFrame = new Ball(finalFrame);
@@ -58,7 +58,7 @@ void Interpolate(){
     rotation = 0.0f;
   }
   
-  drawIntermediateFrame();
+  drawIntermediateFrame(rotation, translation);
     
   fill(green);
   show(ballInitialFrame.pos,5);
@@ -69,7 +69,7 @@ void Interpolate(){
   show(ballMiddleFrame.pos,5);
 }
 
-void drawIntermediateFrame(){
+FR drawIntermediateFrame(float rotation, vec translation){
   
   vec midII = R(initialFrame.I, rotation, axis);
   //println(midII.x, midII.y, midII.z);
@@ -81,24 +81,19 @@ void drawIntermediateFrame(){
   middleFrame.set(midII, midJJ, midKK, midOO);
   //println(midOO.x, midOO.y, midOO.z);
   ballMiddleFrame.setValues(middleFrame);
+  return middleFrame;
 }
 
 void drawIntermediateFramePlaceHolders(){
   FR[] intermediateFramePlaceHolders = new FR[numOfIntermediateFrames];
-  vec perpendiToFp = N(FP_IP,normal);
   float translationForPlaceHolders = initialPoint.z;
   float translationPlaceHolderIncrement = (finalPoint.z - initialPoint.z)/(numOfIntermediateFrames+1);
   float ang = 0;
+  vec trans = V();
   for(int i=0;i<numOfIntermediateFrames; i++){
-    ang = (angle/(numOfIntermediateFrames+1))*(i+1);
-    vec fpn = A(V(cos(ang),FP_IP),M(V(sin(ang),perpendiToFp))); // cos*FP_IP+sin*PerpendicularToFP_IP
-    vec II = V(initialFrame.I);
-    vec JJ = V(initialFrame.J);
-    vec KK = V(initialFrame.K);
-    pt ptn = P(fixedPoint,M(fpn));
-    ptn.z = translationForPlaceHolders+(i+1)*translationPlaceHolderIncrement;
-    intermediateFramePlaceHolders[i] = new FR(II,JJ,KK,ptn);
-    showFrameArrows(intermediateFramePlaceHolders[i]);
+    ang = (-angle/(numOfIntermediateFrames))*(i*10.0/9);
+    trans = V(i*10.0/9, V(10,translationIncrement));
+    showFrameArrows(drawIntermediateFrame(ang, trans));
   }
 }
 
