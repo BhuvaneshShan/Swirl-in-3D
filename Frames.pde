@@ -36,6 +36,11 @@ void customizedInit(){
 }
 
 void Interpolate(){
+  
+  showFrameArrows(initialFrame);
+  showFrameArrows(finalFrame);
+  drawIntermediateFramePlaceHolders();
+  
   time = time + timeIncrement;
   if(time>1){
     time = 0f;
@@ -65,6 +70,25 @@ void drawIntermediateFrame(){
   ballMiddleFrame.setRadius(pow(scaling,time)*ballMiddleFrame.radius); // for scaling - this should be the desired  method
 }
 
+void drawIntermediateFramePlaceHolders(){
+  FR[] intermediateFramePlaceHolders = new FR[numOfIntermediateFrames];
+  vec perpendiToFp = N(FP_IP,normal);
+  float translationForPlaceHolders = initialPoint.z;
+  float translationPlaceHolderIncrement = (finalPoint.z - initialPoint.z)/(numOfIntermediateFrames+1);
+  float ang = 0;
+  for(int i=0;i<numOfIntermediateFrames; i++){
+    ang = (angle/(numOfIntermediateFrames+1))*(i+1);
+    vec fpn = A(V(cos(ang),FP_IP),M(V(sin(ang),perpendiToFp))); // cos*FP_IP+sin*PerpendicularToFP_IP
+    vec II = V(initialFrame.I);
+    vec JJ = V(initialFrame.J);
+    vec KK = V(initialFrame.K);
+    pt ptn = P(fixedPoint,M(fpn));
+    ptn.z = translationForPlaceHolders+(i+1)*translationPlaceHolderIncrement;
+    intermediateFramePlaceHolders[i] = new FR(II,JJ,KK,ptn);
+    showFrameArrows(intermediateFramePlaceHolders[i]);
+  }
+}
+
 public pt GetSpiralCenter(FR Fa, FR Fb){
   float a = angle(Fa.I,Fb.I); 
   float s = n(Fb.I)/n(Fa.I);
@@ -83,6 +107,17 @@ public pt spiralCenter(float a, float z, pt A, pt C) {
   return P(x,y);
 }
 
+void showFrameArrows(FR frameToShow){
+  int d = 30;
+  pushMatrix();
+  translate(frameToShow.O.x,frameToShow.O.y,frameToShow.O.z);
+  noStroke(); 
+  fill(metal); sphere(d/10);
+  fill(blue);  showArrow(d,d/10);
+  fill(red); pushMatrix(); rotateY(PI/2); showArrow(d,d/10); popMatrix();
+  fill(green); pushMatrix(); rotateX(-PI/2); showArrow(d,d/10); popMatrix();
+  popMatrix();
+}
 class FR { 
   pt O; vec I; vec J; vec K;
   FR () {O=P(); I=V(1,0,0); J=V(0,1,0); K=V(0,0,1);}
