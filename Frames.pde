@@ -7,6 +7,8 @@ float timeIncrement = 0.01f;
 vec FP_IP, FP_FP;
 float angle;
 float scaling;
+float translation = 0.0f;
+float translationIncrement = 0.0f;
 vec normal;
 
 void init(){
@@ -18,7 +20,7 @@ void init(){
 
 void customizedInit(){
   initialPoint = new pt(-200, 0, 0);
-  finalPoint = new pt(200,0,0);
+  finalPoint = new pt(200,200,200);
   initialFrame =  new FR(new vec(1.0f,-1.0f,0), new vec(1.0f,1.0f,0), new vec(0,0,1),initialPoint); //3 -5 5 5 //1 -1 1 1
   finalFrame =  new FR(new vec(1.0f,1.0f,0), new vec(-1.0f,1.0f,0), new vec(0,0,1),finalPoint); //5 3 -3 5 //1 1 -1 1
   ballInitialFrame = new Ball(initialFrame);
@@ -29,6 +31,8 @@ void customizedInit(){
   FP_IP = V(initialPoint,fixedPoint);
   FP_FP = V(finalPoint,fixedPoint);
   angle = angle(FP_IP,FP_FP);
+  translationIncrement = (finalPoint.z - initialPoint.z)/100;
+  translation = initialPoint.z;
 }
 
 void Interpolate(){
@@ -36,6 +40,7 @@ void Interpolate(){
   if(time>1){
     time = 0f;
     ballMiddleFrame.setRadius(5);
+    translation = initialPoint.z;
   }
   
   drawIntermediateFrame();
@@ -53,7 +58,9 @@ void drawIntermediateFrame(){
   vec perpendiToFp = N(FP_IP,normal);
   vec fpn = A(V(cos(angle*time),FP_IP),M(V(sin(angle*time),perpendiToFp))); // cos*FP_IP+sin*PerpendicularToFP_IP
   //fpn = V(pow(scaling,time),fpn); //for scaling - not sure if this is the desired way.
+  translation += translationIncrement;
   pt ptn = P(fixedPoint,M(fpn));
+  ptn.z = translation;
   ballMiddleFrame.setPt(ptn);
   ballMiddleFrame.setRadius(pow(scaling,time)*ballMiddleFrame.radius); // for scaling - this should be the desired  method
 }
