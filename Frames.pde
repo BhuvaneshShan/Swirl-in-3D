@@ -1,15 +1,15 @@
 pt initialPoint, finalPoint, fixedPoint;
-FR initialFrame, finalFrame;
+FR initialFrame, finalFrame, middleFrame;
 Ball ballInitialFrame, ballFinalFrame, ballFixedPoint, ballMiddleFrame;
 int numOfIntermediateFrames = 10;
 float time = 0f;
 float timeIncrement = 0.01f;
 vec FP_IP, FP_FP;
-float angle;
+float angle, rotation = 0.0f, rotationIncrement = 0.0f;
 float scaling;
-float translation = 0.0f;
-float translationIncrement = 0.0f;
-vec normal;
+vec translation = V();
+vec translationIncrement = V();
+vec normal, axis;
 
 void init(){
   ballFixedPoint = new Ball(); 
@@ -22,25 +22,35 @@ void customizedInit(){
   initialPoint = new pt(-200, 0, 0);
   finalPoint = new pt(200,200,200);
   initialFrame =  new FR(new vec(1.0f,-1.0f,0), new vec(1.0f,1.0f,0), new vec(0,0,1),initialPoint); //3 -5 5 5 //1 -1 1 1
-  finalFrame =  new FR(new vec(1.0f,1.0f,0), new vec(-1.0f,1.0f,0), new vec(0,0,1),finalPoint); //5 3 -3 5 //1 1 -1 1
+  finalFrame =  new FR(new vec(-1.0f,1.0f,0), new vec(1.0f,1.0f,0), new vec(0,0,1),finalPoint); //5 3 -3 5 //1 1 -1 1
+  middleFrame = new FR();
   ballInitialFrame = new Ball(initialFrame);
   ballFinalFrame = new Ball(finalFrame);
-  fixedPoint = GetSpiralCenter(initialFrame,finalFrame);
-  ballFixedPoint.setPt(fixedPoint);
   
-  FP_IP = V(initialPoint,fixedPoint);
-  FP_FP = V(finalPoint,fixedPoint);
-  angle = angle(FP_IP,FP_FP);
-  translationIncrement = (finalPoint.z - initialPoint.z)/100;
-  translation = initialPoint.z;
+  
+  //FP_IP = V(initialPoint,fixedPoint);
+  //FP_FP = V(finalPoint,fixedPoint);
+  axis = GetSpiralAxis(initialFrame, finalFrame);
+  angle = GetRotAngle(initialFrame.I,finalFrame.I,axis);
+  println("Axis:",axis.x,axis.y,axis.z);
+  println("Angle:",angle*180/3.14159);
+  rotationIncrement = -angle/100.0;
+  fixedPoint = GetFixedPoint(initialFrame,finalFrame);
+  println("Fixed Point:",fixedPoint.x, fixedPoint.y, fixedPoint.z);
+  ballFixedPoint.setPt(fixedPoint);
+  // = axis.mul(d(axis,V(initialFrame.O,finalFrame.O))).div(100.0); // Along the axis
+  translationIncrement = V(d(axis,V(initialFrame.O,finalFrame.O)),axis).div(100.0);
 }
 
 void Interpolate(){
   time = time + timeIncrement;
+  translation = translation.add(translationIncrement);
+  rotation += rotationIncrement;
   if(time>1){
     time = 0f;
     ballMiddleFrame.setRadius(5);
-    translation = initialPoint.z;
+    translation = V();
+    rotation = 0.0f;
   }
   
   drawIntermediateFrame();
@@ -51,18 +61,21 @@ void Interpolate(){
   fill(red);
   show(ballFixedPoint.pos,5);
   fill(orange);
-  show(ballMiddleFrame.pos,ballMiddleFrame.radius);
+  show(ballMiddleFrame.pos,5);
 }
 
 void drawIntermediateFrame(){
-  vec perpendiToFp = N(FP_IP,normal);
-  vec fpn = A(V(cos(angle*time),FP_IP),M(V(sin(angle*time),perpendiToFp))); // cos*FP_IP+sin*PerpendicularToFP_IP
-  //fpn = V(pow(scaling,time),fpn); //for scaling - not sure if this is the desired way.
-  translation += translationIncrement;
-  pt ptn = P(fixedPoint,M(fpn));
-  ptn.z = translation;
-  ballMiddleFrame.setPt(ptn);
-  ballMiddleFrame.setRadius(pow(scaling,time)*ballMiddleFrame.radius); // for scaling - this should be the desired  method
+  
+  vec midII = R(initialFrame.I, rotation, axis);
+  //println(midII.x, midII.y, midII.z);
+  vec midJJ = R(initialFrame.J, rotation, axis);
+  vec midKK = R(initialFrame.K, rotation, axis);
+  pt midOO = P(fixedPoint,(R(V(fixedPoint, initialFrame.O), rotation, axis)));
+  
+  midOO.add(translation);
+  middleFrame.set(midII, midJJ, midKK, midOO);
+  //println(midOO.x, midOO.y, midOO.z);
+  ballMiddleFrame.setValues(middleFrame);
 }
 
 public pt GetSpiralCenter(FR Fa, FR Fb){
@@ -72,6 +85,29 @@ public pt GetSpiralCenter(FR Fa, FR Fb){
   return G;
 }
 
+public float GetRotAngle(vec Ia, vec Ib, vec Axis){
+  return angle(ProjectOntoPlane(Ia, Axis),ProjectOntoPlane(Ib, Axis));
+}
+
+public pt GetFixedPoint(FR Fa, FR Fb){
+  vec o = V(Fa.O,Fb.O);
+  
+  //pt P = (Fa.O.add(Fb.O).add(N(axis,o).div(tan(angle/2.0)))).div(2.0);
+  
+  pt P = P(A(Fa.O,Fb.O),N(axis,o).div(tan(angle/2.0))).div(2.0);
+  
+  return P;
+}
+
+public vec GetSpiralAxis(FR Fa, FR Fb){
+  vec i = V(A(Fa.I,M(Fb.I)));
+  vec j = V(A(Fa.J,M(Fb.J)));
+  vec k = V(A(Fa.K,M(Fb.K)));
+  
+  vec Axis = V(A(A(N(i,j), N(j,k)), N(k,i)));
+  Axis.normalize();
+  return Axis;
+}
 
 public pt spiralCenter(float a, float z, pt A, pt C) {
   float c=cos(a), s=sin(a);
@@ -87,6 +123,7 @@ class FR {
   pt O; vec I; vec J; vec K;
   FR () {O=P(); I=V(1,0,0); J=V(0,1,0); K=V(0,0,1);}
   FR(vec II, vec JJ, vec KK, pt OO) {I=V(II); J=V(JJ); K = V(KK); O=P(OO);}
+  void set (vec II, vec JJ, vec KK, pt OO) {I=V(II); J=V(JJ); K = V(KK); O=P(OO);}
   //FR(pt A, pt B) {O=P(A); I=V(A,B); J=R(I);}
   /*vec of(vec V) {return W(V.x,I,V.y,J);}
   pt of(pt P) {return P(O,W(P.x,I,P.y,J));}
