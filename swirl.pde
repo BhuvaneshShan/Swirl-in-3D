@@ -176,8 +176,22 @@ void mouseMoved() {
 void mouseDragged() {
   if (!keyPressed) {Of.add(ToIJ(V((float)(mouseX-pmouseX),(float)(mouseY-pmouseY),0))); }
   if (keyPressed && key==CODED && keyCode==SHIFT) {Of.add(ToK(V((float)(mouseX-pmouseX),(float)(mouseY-pmouseY),0)));};
-  if (keyPressed && key=='x') P.movePicked(ToIJ(V((float)(mouseX-pmouseX),(float)(mouseY-pmouseY),0))); 
-  if (keyPressed && key=='z') P.movePicked(ToK(V((float)(mouseX-pmouseX),(float)(mouseY-pmouseY),0))); 
+  if (keyPressed && key=='x'){ 
+          P.movePicked(ToIJ(V((float)(mouseX-pmouseX),(float)(mouseY-pmouseY),0)));
+          if(pickedFrame!=-1)
+          {
+            frame[pickedFrame].movePicked(ToIJ(V((float)(mouseX-pmouseX),(float)(mouseY-pmouseY),0)));
+            positionChanged = true;
+          }
+        } 
+  if (keyPressed && key=='z'){ 
+        P.movePicked(ToK(V((float)(mouseX-pmouseX),(float)(mouseY-pmouseY),0)));
+        if(pickedFrame!=-1)
+          {
+            frame[pickedFrame].movePicked(ToK(V((float)(mouseX-pmouseX),(float)(mouseY-pmouseY),0)));
+            positionChanged = true;
+          }
+      } 
   if (keyPressed && key=='X') P.moveAll(ToIJ(V((float)(mouseX-pmouseX),(float)(mouseY-pmouseY),0))); 
   if (keyPressed && key=='Z') P.moveAll(ToK(V((float)(mouseX-pmouseX),(float)(mouseY-pmouseY),0))); 
   if (keyPressed && key=='f') { // move focus point on plane
