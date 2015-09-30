@@ -6,7 +6,14 @@ int numOfIntermediateFrames = 10;
 float time = 0f;
 float timeIncrement = 0.01f;
 float angle, rotation = 0.0f, rotationIncrement = 0.0f;
-float scaling;
+
+float initialBallSize = 5;
+//float initialScaleValue = 1.0f;
+float scalingIncrement = 2.5f;
+//float finalScaleValue = 2.0f;
+float finalBallSize = 5;
+float scaling=1.0f;
+
 vec translation = V();
 vec translationIncrement = V();
 vec normal, axis;
@@ -16,7 +23,7 @@ boolean positionChanged = false;
 void init(){
   ballFixedPoint = new Ball(); 
   ballMiddleFrame = new Ball(); //ball to show intermediate frames
-  scaling = 1.05f;
+  //scaling = 1.0f;
   normal = new vec(0,0,1);
   frame = new FR[2];
 }
@@ -46,11 +53,13 @@ void calculateValues(){
   ballFixedPoint.setPt(fixedPoint);
   // = axis.mul(d(axis,V(initialFrame.O,finalFrame.O))).div(100.0); // Along the axis
   translationIncrement = V(d(axis,V(frame[0].O,frame[1].O)),axis).div(100.0);
+  
 }
 
 void Interpolate(){
   
   showRotatedFrame(frame[0]);
+  //frame[0].showArrows();
   showRotatedFrame(frame[1]);
   if(positionChanged){ 
     calculateValues();
@@ -64,7 +73,7 @@ void Interpolate(){
   rotation += rotationIncrement;
   if(time>1){
     time = 0f;
-    ballMiddleFrame.setRadius(5);
+    ballMiddleFrame.setRadius(initialBallSize);
     translation = V();
     rotation = 0.0f;
   }
@@ -89,21 +98,20 @@ void Interpolate(){
   fill(red);
   show(ballFixedPoint.pos,5);
   fill(orange);
-  show(ballMiddleFrame.pos,5);
+  show(ballMiddleFrame.pos,ballMiddleFrame.radius);
 }
 
 FR drawIntermediateFrame(float rotation, vec translation){
   
   vec midII = R(frame[0].I, rotation, axis);
-  //println(midII.x, midII.y, midII.z);
   vec midJJ = R(frame[0].J, rotation, axis);
   vec midKK = R(frame[0].K, rotation, axis);
   pt midOO = P(fixedPoint,(R(V(fixedPoint, frame[0].O), rotation, axis)));
   
   midOO.add(translation);
   middleFrame.set(midII, midJJ, midKK, midOO);
-  //println(midOO.x, midOO.y, midOO.z);
   ballMiddleFrame.setValues(middleFrame);
+  ballMiddleFrame.setRadius(initialBallSize* pow(scaling,time));
   return middleFrame;
 }
 
@@ -207,7 +215,10 @@ class FR {
   void set (vec II, vec JJ, vec KK, pt OO) {I=V(II); J=V(JJ); K = V(KK); O=P(OO);}
   
   void movePicked(vec V) { O.add(V);}
-
+  
+  //FR showArrows() {show(O,5); arrow(O,I,10); arrow(O,J,10); arrow(O,K,10); return this; }
+  
+  
   //FR(pt A, pt B) {O=P(A); I=V(A,B); J=R(I);}
   /*vec of(vec V) {return W(V.x,I,V.y,J);}
   pt of(pt P) {return P(O,W(P.x,I,P.y,J));}

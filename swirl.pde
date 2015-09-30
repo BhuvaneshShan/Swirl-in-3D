@@ -156,6 +156,25 @@ void keyPressed() {
   if(key=='a') animating=!animating; // toggle animation
   if(key==',') viewpoint=!viewpoint;
   if(key=='#') exit();
+  if(key=='1') { //to reduce initial frame size
+    initialBallSize -= scalingIncrement; 
+    if(initialBallSize<=1) initialBallSize = 1; 
+    scaling = finalBallSize/initialBallSize;
+    //frame[0].mul(scaling);
+  }
+  if(key=='2') { // to increse initial frame size
+    initialBallSize += scalingIncrement; 
+    scaling = finalBallSize/initialBallSize;
+  }
+  if(key=='3') { //to increase final frame size
+    finalBallSize -= scalingIncrement; 
+    if(finalBallSize<=1) finalBallSize = 1; 
+    scaling = finalBallSize/initialBallSize;
+  }
+  if(key=='4') { //to decrease final frame size
+    finalBallSize += scalingIncrement; 
+    scaling = finalBallSize/initialBallSize;
+  }
   change=true;
   }
 
