@@ -31,11 +31,13 @@ void init(){
 void customizedInit(){
   initialPoint = new pt(-200, 0, 0);
   finalPoint = new pt(200,0,200);
-  frame[0] = new FR(new vec(1.0f,-1.0f,0),new vec(1.0f,1.0f,0) , new vec(0,0,1),initialPoint);//new vec(1.0f,1.0f,0)
-  //frame[0] = new FR(I,J , new vec(0,0,1), initialPoint);
+  //frame[0] = new FR(new vec(1.0f,0,0),new vec(0,0.8f,0.6f) , new vec(0,-0.6f,0.8f),initialPoint);//new vec(1.0f,1.0f,0)
+  //frame[0] = new FR(I,J , R(K,PI/2,J), initialPoint);
+  frame[0] = new FR(I,J,K,initialPoint);
   //initialFrame = frame[0]; //3 -5 5 5 //1 -1 1 1
-  frame[1] =  new FR(new vec(1.0f,1.0f,0),new vec(-1.0f,1.0f,0), new vec(0,0,1), finalPoint);//new vec(-1.0f,1.0f,0)
+  //frame[1] =  new FR(new vec(1.0f,0.0f,0),new vec(0.0f,0.0f,1.0f), new vec(0,-1,0.0f), finalPoint);//new vec(-1.0f,1.0f,0)
   //frame[1] =  new FR(R(frame[0].I,PI/2,K),R(frame[0].J,PI/2,K), new vec(0,0,1), finalPoint);
+  frame[1] = new FR(new vec(1,0,0), new vec(0,0.6f,0.8f), new vec(0,-0.8f,0.6f),finalPoint);
   //finalFrame = frame[1]; //5 3 -3 5 //1 1 -1 1
   
   middleFrame = new FR();
@@ -46,7 +48,7 @@ void customizedInit(){
 
 void calculateValues(){
   axis = GetSpiralAxis(frame[0], frame[1]);
-  angle = GetRotAngle(frame[0].I,frame[1].I,axis);
+  angle = GetRotAngle(frame[0],frame[1],axis);
   println("Axis:",axis.x,axis.y,axis.z);
   println("Angle:",angle*180/3.14159);
   rotationIncrement = -angle/100.0;
@@ -62,6 +64,7 @@ void Interpolate(){
   
   showRotatedFrame(frame[0],initialBallSize);
   //frame[0].showArrows();
+  //println("final frame: "+finalBallSize);
   showRotatedFrame(frame[1],finalBallSize);
   if(positionChanged){ 
     calculateValues();
@@ -80,7 +83,7 @@ void Interpolate(){
  
   drawIntermediateFramePlaceHolders();
    
-  drawIntermediateFrame(rotation, translation);
+  FR mf = drawIntermediateFrame(rotation, translation);
   
   //To move initial and final frames/balls
   if(mousePressed&&!keyPressed){
@@ -100,12 +103,26 @@ void Interpolate(){
   fill(red);
   show(ballFixedPoint.pos,4,false);
   fill(orange);
-  show(ballMiddleFrame.pos,ballMiddleFrame.radius,true);
+  show(mf,ballMiddleFrame.radius,true);
+  
+}
+void show(FR frameToShow, float side, boolean cube)
+{
+  if(cube){
+    float theta = acos((trace(frameToShow)-1)/2);
+    vec axis = AxisAngleVec(frameToShow).div(2*sin(theta));
+    float ang = axis.norm();
+    axis = axis.normalize();
+    pushMatrix(); translate(frameToShow.O.x,frameToShow.O.y,frameToShow.O.z); rotate(ang,axis.x,axis.y,axis.z); box(side); popMatrix();
+    }
+  else{pushMatrix(); translate(frameToShow.O.x,frameToShow.O.y,frameToShow.O.z); sphere(side); popMatrix();}
 }
 
 void show(pt p, float side, boolean cube)
 {
-  if(cube){pushMatrix(); translate(p.x,p.y,p.z); box(side); popMatrix();}
+  if(cube){
+    pushMatrix(); translate(p.x,p.y,p.z); box(side); popMatrix();
+    }
   else{pushMatrix(); translate(p.x,p.y,p.z); sphere(side); popMatrix();}
 }
 
@@ -146,8 +163,13 @@ public pt GetSpiralCenter(FR Fa, FR Fb){
   return G;
 }
 
-public float GetRotAngle(vec Ia, vec Ib, vec Axis){
-  return angle(ProjectOntoPlane(Ia, Axis),ProjectOntoPlane(Ib, Axis));
+public float GetRotAngle(FR A, FR B, vec Axis){
+ float angI = angle(ProjectOntoPlane(A.I, Axis),ProjectOntoPlane(B.I, Axis));
+  float angJ = angle(ProjectOntoPlane(A.J, Axis),ProjectOntoPlane(B.J, Axis));
+  float angK = angle(ProjectOntoPlane(A.K, Axis),ProjectOntoPlane(B.K, Axis));
+  if (!Float.isNaN(angI)) return angI;
+  else if (!Float.isNaN(angJ)) return angJ;
+  return angK;
 }
 
 public pt GetFixedPoint(FR Fa, FR Fb){
@@ -164,6 +186,11 @@ public vec GetSpiralAxis(FR Fa, FR Fb){
   vec i = V(A(Fa.I,M(Fb.I)));
   vec j = V(A(Fa.J,M(Fb.J)));
   vec k = V(A(Fa.K,M(Fb.K)));
+  
+  //vec i = V(A(Fb.I,M(Fa.I)));
+  //vec j = V(A(Fb.J,M(Fa.J)));
+  //vec k = V(A(Fb.K,M(Fa.K)));
+  
   
   vec Axis = V(A(A(N(i,j), N(j,k)), N(k,i)));
   Axis.normalize();
@@ -185,6 +212,15 @@ void showRotatedFrame(FR frameToShow,float scale) {
   noStroke();
   pushMatrix();
   translate(frameToShow.O.x, frameToShow.O.y, frameToShow.O.z);
+  stroke(red);
+  strokeWeight(4);
+  line(0,0,0,d*frameToShow.I.x,d*frameToShow.I.y,d*frameToShow.I.z);
+  stroke(green);
+  line(0,0,0,d*frameToShow.J.x,d*frameToShow.J.y,d*frameToShow.J.z);
+  stroke(blue);
+  line(0,0,0,d*frameToShow.K.x,d*frameToShow.K.y,d*frameToShow.K.z);
+  noStroke();
+  
   /*float theta = acos((trace(frameToShow)-1)/2);
   vec axis = AxisAngleVec(frameToShow).div(2*sin(theta));
   float ang = axis.norm();
@@ -196,14 +232,14 @@ void showRotatedFrame(FR frameToShow,float scale) {
   frameToShow.J = R(frameToShow.J,ang,axis);
   frameToShow.K = R(frameToShow.K,ang,axis);
   */
-  float iangle = asin(frameToShow.I.y/frameToShow.I.norm());//angle(new vec(1,0,0),frameToShow.I);
+  /*float iangle = asin(frameToShow.I.y/frameToShow.I.norm());//angle(new vec(1,0,0),frameToShow.I);
   float jangle = asin(frameToShow.J.x/frameToShow.J.norm());//angle(new vec(0,1,0),frameToShow.J);
   
   fill(metal); sphere(4); //d/10
   fill(blue); showArrow(d,d/10); //z - k
   fill(red);  pushMatrix();  rotateY(PI/2); rotateX(-iangle); showArrow(d,d/10); popMatrix(); //x - i  
   fill(green); pushMatrix(); rotateX(-PI/2); rotateY(jangle); showArrow(d,d/10); popMatrix(); //y - j  
-  
+  */
   popMatrix();
   }
 vec AxisAngleVec(FR f){
@@ -241,9 +277,6 @@ class FR {
   
   void movePicked(vec V) { O.add(V);}
   
-  //FR showArrows() {show(O,5); arrow(O,I,10); arrow(O,J,10); arrow(O,K,10); return this; }
-  
-  
   //FR(pt A, pt B) {O=P(A); I=V(A,B); J=R(I);}
   /*vec of(vec V) {return W(V.x,I,V.y,J);}
   pt of(pt P) {return P(O,W(P.x,I,P.y,J));}
@@ -260,6 +293,7 @@ class FR {
     print("Vec J:"+J.x+","+J.y);
   }*/
   }
+  
 class Ball{
   pt pos;
   float radius = 5;
