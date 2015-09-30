@@ -1,10 +1,10 @@
 pt initialPoint, finalPoint, fixedPoint;
 FR initialFrame, finalFrame, middleFrame;
+FR[] frame;
 Ball ballInitialFrame, ballFinalFrame, ballFixedPoint, ballMiddleFrame;
 int numOfIntermediateFrames = 10;
 float time = 0f;
 float timeIncrement = 0.01f;
-vec FP_IP, FP_FP;
 float angle, rotation = 0.0f, rotationIncrement = 0.0f;
 float scaling;
 vec translation = V();
@@ -16,20 +16,21 @@ void init(){
   ballMiddleFrame = new Ball(); //ball to show intermediate frames
   scaling = 1.05f;
   normal = new vec(0,0,1);
+  frame = new FR[2];
 }
 
 void customizedInit(){
   initialPoint = new pt(-200, 0, 0);
   finalPoint = new pt(200,0,200);
-  initialFrame =  new FR(new vec(1.0f,-1.0f,0), new vec(1.0f,1.0f,0), new vec(0,0,1),initialPoint); //3 -5 5 5 //1 -1 1 1
-  finalFrame =  new FR(new vec(1.0f,1.0f,0), new vec(-1.0f,1.0f,0), new vec(0,0,1),finalPoint); //5 3 -3 5 //1 1 -1 1
+  frame[0] = new FR(new vec(1.0f,-1.0f,0),new vec(1.0f,1.0f,0) , new vec(0,0,1),initialPoint);//new vec(1.0f,1.0f,0) 
+  initialFrame = frame[0]; //3 -5 5 5 //1 -1 1 1
+  frame[1] =  new FR(new vec(1.0f,1.0f,0),new vec(-1.0f,1.0f,0), new vec(0,0,1),finalPoint);//new vec(-1.0f,1.0f,0)
+  finalFrame = frame[1]; //5 3 -3 5 //1 1 -1 1
+  
   middleFrame = new FR();
   ballInitialFrame = new Ball(initialFrame);
   ballFinalFrame = new Ball(finalFrame);
   
-  
-  //FP_IP = V(initialPoint,fixedPoint);
-  //FP_FP = V(finalPoint,fixedPoint);
   axis = GetSpiralAxis(initialFrame, finalFrame);
   angle = GetRotAngle(initialFrame.I,finalFrame.I,axis);
   println("Axis:",axis.x,axis.y,axis.z);
@@ -44,8 +45,8 @@ void customizedInit(){
 
 void Interpolate(){
   
-  showFrameArrows(initialFrame);
-  showFrameArrows(finalFrame);
+  showRotatedFrame(initialFrame);
+  showRotatedFrame(finalFrame);
   drawIntermediateFramePlaceHolders();
   
   time = time + timeIncrement;
@@ -93,7 +94,10 @@ void drawIntermediateFramePlaceHolders(){
   for(int i=0;i<numOfIntermediateFrames; i++){
     ang = (-angle/(numOfIntermediateFrames))*(i*10.0/9);
     trans = V(i*10.0/9, V(10,translationIncrement));
-    showFrameArrows(drawIntermediateFrame(ang, trans));
+    if(i!=0 && i!=numOfIntermediateFrames-1){
+      //showFrameArrows(drawIntermediateFrame(ang, trans));
+      showRotatedFrame(drawIntermediateFrame(ang, trans));
+    }
   }
 }
 
@@ -138,13 +142,29 @@ public pt spiralCenter(float a, float z, pt A, pt C) {
   return P(x,y);
 }
 
+void showRotatedFrame(FR frameToShow) {
+  int d = 30;
+  noStroke();
+  pushMatrix();
+  translate(frameToShow.O.x, frameToShow.O.y, frameToShow.O.z);
+  float iangle = asin(frameToShow.I.y/frameToShow.I.norm());//angle(new vec(1,0,0),frameToShow.I);
+  float jangle = asin(frameToShow.J.x/frameToShow.J.norm());//angle(new vec(0,1,0),frameToShow.J);
+  fill(metal); sphere(d/10);
+  
+  fill(blue);  /*arrow(new pt(0,0,0),frameToShow.K,d);*/showArrow(d,d/10); //z - k
+  fill(red);  pushMatrix();  rotateY(PI/2); rotateX(-iangle);  /*arrow(new pt(0,0,0),frameToShow.I,d);*/showArrow(d,d/10); popMatrix(); //x - i
+  fill(green); pushMatrix(); rotateX(-PI/2); rotateY(jangle);/*arrow(new pt(0,0,0),frameToShow.J,d);*/showArrow(d,d/10); popMatrix(); //y - j
+  
+  popMatrix();
+  }
+
 void showFrameArrows(FR frameToShow){
   int d = 30;
   pushMatrix();
   translate(frameToShow.O.x,frameToShow.O.y,frameToShow.O.z);
   noStroke(); 
   fill(metal); sphere(d/10);
-  fill(blue);  showArrow(d,d/10);
+  fill(blue);  showArrow(d,d/10); 
   fill(red); pushMatrix(); rotateY(PI/2); showArrow(d,d/10); popMatrix();
   fill(green); pushMatrix(); rotateX(-PI/2); showArrow(d,d/10); popMatrix();
   popMatrix();

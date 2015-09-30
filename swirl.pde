@@ -15,7 +15,7 @@ void setup() {
   size(600, 600, P3D); // p3D means that we will do 3D graphics
   P.declare(); Q.declare(); PtQ.declare(); // P is a polyloop in 3D: declared in pts
   // P.resetOnCircle(12,100); // used to get started if no model exists on file 
-  P.loadPts("data/pts");  // loads saved model from file
+  P.loadPts("data/pts");  // loads saved model from file 
   Q.loadPts("data/pts2");  // loads saved model from file
   noSmooth();
   
