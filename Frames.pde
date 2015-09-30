@@ -58,15 +58,13 @@ void calculateValues(){
 
 void Interpolate(){
   
-  showRotatedFrame(frame[0]);
+  showRotatedFrame(frame[0],initialBallSize);
   //frame[0].showArrows();
-  showRotatedFrame(frame[1]);
+  showRotatedFrame(frame[1],finalBallSize);
   if(positionChanged){ 
     calculateValues();
     positionChanged = false;
   }
-  
-  drawIntermediateFramePlaceHolders();
   
   time = time + timeIncrement;
   translation = translation.add(translationIncrement);
@@ -77,7 +75,9 @@ void Interpolate(){
     translation = V();
     rotation = 0.0f;
   }
-  
+ 
+  drawIntermediateFramePlaceHolders();
+   
   drawIntermediateFrame(rotation, translation);
   
   //To move initial and final frames/balls
@@ -124,9 +124,9 @@ void drawIntermediateFramePlaceHolders(){
   for(int i=0;i<numOfIntermediateFrames; i++){
     ang = (-angle/(numOfIntermediateFrames))*(i*10.0/9);
     trans = V(i*10.0/9, V(10,translationIncrement));
+    float sfactor = pow(scaling,(i+1)*(1.0f/numOfIntermediateFrames));
     if(i!=0 && i!=numOfIntermediateFrames-1){
-      //showFrameArrows(drawIntermediateFrame(ang, trans));
-      showRotatedFrame(drawIntermediateFrame(ang, trans));
+      showRotatedFrame(drawIntermediateFrame(ang, trans),initialBallSize*sfactor);//i*(1/numOfIntermediateFrames)
     }
   }
 }
@@ -172,8 +172,8 @@ public pt spiralCenter(float a, float z, pt A, pt C) {
   return P(x,y);
 }
 
-void showRotatedFrame(FR frameToShow) {
-  int d = 30;
+void showRotatedFrame(FR frameToShow,float scale) {
+  float d = scale*4;//30;
   noStroke();
   pushMatrix();
   translate(frameToShow.O.x, frameToShow.O.y, frameToShow.O.z);
