@@ -61,8 +61,8 @@ void calculateValues(){
 
 void Interpolate(){
   
-  showRotatedFrame(frame[0],initialBallSize,true);
-  showRotatedFrame(frame[1],finalBallSize,true);
+  showRotatedFrame(frame[0],initialBallSize,0);
+  showRotatedFrame(frame[1],finalBallSize,0);
   if(positionChanged){ 
     calculateValues();
     positionChanged = false;
@@ -146,7 +146,7 @@ void drawIntermediateFrame(float rotation, vec translation){
   middleFrame.set(midII, midJJ, midKK, midOO);
   //ballMiddleFrame.setValues(middleFrame);
   //ballMiddleFrame.setRadius(initialBallSize* pow(scaling,time));
-  showRotatedFrame(middleFrame,initialBallSize* pow(scaling,time),true);
+  showRotatedFrame(middleFrame,initialBallSize* pow(scaling,time),2);
 }
 
 FR getIntermediateFrame(float rotation, vec translation){
@@ -171,7 +171,7 @@ void drawIntermediateFramePlaceHolders(){
     trans = V(i*10.0/9, V(10,translationIncrement));
     float sfactor = pow(scaling,(i+1)*(1.0f/numOfIntermediateFrames));
     if(i!=0 && i!=numOfIntermediateFrames-1){
-      showRotatedFrame(getIntermediateFrame(ang, trans),initialBallSize*sfactor,false);//i*(1/numOfIntermediateFrames)
+      showRotatedFrame(getIntermediateFrame(ang, trans),initialBallSize*sfactor,1);//i*(1/numOfIntermediateFrames)
     }
   }
 }
@@ -217,7 +217,7 @@ public pt spiralCenter(float a, float z, pt A, pt C) {
   return P(x,y);
 }
 
-void showRotatedFrame(FR frameToShow,float scale, boolean magentaColor) {
+void showRotatedFrame(FR frameToShow,float scale, int type) {
   float d = scale*magicSizeFactor;
   noStroke();
   pushMatrix();
@@ -230,9 +230,18 @@ void showRotatedFrame(FR frameToShow,float scale, boolean magentaColor) {
   stroke(blue);
   line(0,0,0,d*frameToShow.K.x,d*frameToShow.K.y,d*frameToShow.K.z);
   noStroke();
-  if(magentaColor) fill(magenta);
-  else fill(metal);
   
+  switch(type){
+    case 0:
+      fill(magenta);
+      break;
+    case 1:
+      fill(metal);
+      break;
+    case 2:
+      fill(black);
+      break;
+  }
   show(P(d*frameToShow.I.x,d*frameToShow.I.y,d*frameToShow.I.z),magicSizeFactor);
   show(P(d*frameToShow.J.x,d*frameToShow.J.y,d*frameToShow.J.z),magicSizeFactor);
   show(P(d*frameToShow.K.x,d*frameToShow.K.y,d*frameToShow.K.z),magicSizeFactor);
