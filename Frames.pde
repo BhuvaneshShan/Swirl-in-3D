@@ -81,9 +81,6 @@ void Interpolate(){
   
   if(animating){ 
     drawIntermediateFrame(rotation, translation);
-    //fill(orange);
-    //show(mf,ballMiddleFrame.radius,true);
-    //showRotatedFrame(mf,initialBallSize*sfactor);
   }
   //To move initial and final frames/balls
   if(mousePressed&&!keyPressed){
@@ -176,13 +173,6 @@ void drawIntermediateFramePlaceHolders(){
   }
 }
 
-public pt GetSpiralCenter(FR Fa, FR Fb){
-  float a = angle(Fa.I,Fb.I); 
-  float s = n(Fb.I)/n(Fa.I);
-  pt G = spiralCenter(a,s,Fa.O,Fb.O);
-  return G;
-}
-
 public float GetRotAngle(FR A, FR B, vec Axis){
   float angI = angle(ProjectOntoPlane(A.I, Axis),ProjectOntoPlane(B.I, Axis));
   float angJ = angle(ProjectOntoPlane(A.J, Axis),ProjectOntoPlane(B.J, Axis));
@@ -205,16 +195,6 @@ public vec GetSpiralAxis(FR Fa, FR Fb){
   vec Axis = V(A(A(N(i,j), N(j,k)), N(k,i)));
   Axis.normalize();
   return Axis;
-}
-
-public pt spiralCenter(float a, float z, pt A, pt C) {
-  float c=cos(a), s=sin(a);
-  float D = sq(c*z-1)+sq(s*z);
-  float ex = c*z*A.x - C.x - s*z*A.y;
-  float ey = c*z*A.y - C.y + s*z*A.x;
-  float x=(ex*(c*z-1) + ey*s*z) / D;
-  float y=(ey*(c*z-1) - ex*s*z) / D;
-  return P(x,y);
 }
 
 void showRotatedFrame(FR frameToShow,float scale, int type) {
@@ -307,24 +287,8 @@ class FR {
     J = R(this.J,angle,this.I);
     
   }
-  
-  
-//FR(pt A, pt B) {O=P(A); I=V(A,B); J=R(I);}
-  /*vec of(vec V) {return W(V.x,I,V.y,J);}
-  pt of(pt P) {return P(O,W(P.x,I,P.y,J));}
-  FR of(FR F) {return F(of(F.I),of(F.J),of(F.O));}
-  vec invertedOf(vec V) {return V(det(V,J)/det(I,J),det(V,I)/det(J,I));}
-  pt invertedOf(pt P) {vec V = V(O,P); return P(det(V,J)/det(I,J),det(V,I)/det(J,I));}
-  FR invertedOf(FR F) {return F(invertedOf(F.I),invertedOf(F.J),invertedOf(F.O));}
-  FR showArrow() {show(O,4); arrow(O,I); return this;}
-  FR showArrows() {show(O,4); arrow(O,I); arrow(O,J); return this; }
-  void printFR(){
-    println("Frame:");
-    print("Pt:"+O.x+","+O.y);
-    print("Vec I:"+I.x+","+I.y);
-    print("Vec J:"+J.x+","+J.y);
-  }*/
-  }
+
+}
   
 class Ball{
   pt pos;
