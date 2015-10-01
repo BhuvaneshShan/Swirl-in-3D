@@ -153,7 +153,7 @@ void keyPressed() {
   if(key=='L') {P.loadPts("data/pts"); Q.loadPts("data/pts2");}   // loads saved model
   if(key=='w') P.savePts("data/pts");   // save vertices to pts
   if(key=='l') P.loadPts("data/pts"); 
-  if(key=='a') animating=!animating; // toggle animation
+  if(key=='a') {animating=!animating; resetValues();}// toggle animation
   if(key==',') viewpoint=!viewpoint;
   if(key=='#') exit();
   if(key=='1') { //to reduce initial frame size
@@ -211,6 +211,20 @@ void mouseDragged() {
             positionChanged = true;
           }
       } 
+  if (keyPressed && key=='r'){
+    //rotate frame
+    if(pickedFrame!=-1){
+      frame[pickedFrame].rotatePicked((float)(mouseX-pmouseX));
+      positionChanged = true;
+    }
+  }
+  if (keyPressed && key=='e'){
+    //rotate frame
+    if(pickedFrame!=-1){
+      frame[pickedFrame].rotatePickedZ((float)(mouseX-pmouseX));
+      positionChanged = true;
+    }
+  }
   if (keyPressed && key=='X') P.moveAll(ToIJ(V((float)(mouseX-pmouseX),(float)(mouseY-pmouseY),0))); 
   if (keyPressed && key=='Z') P.moveAll(ToK(V((float)(mouseX-pmouseX),(float)(mouseY-pmouseY),0))); 
   if (keyPressed && key=='f') { // move focus point on plane
@@ -226,13 +240,13 @@ void mouseDragged() {
 // **** Header, footer, help text on canvas
 void displayHeader() { // Displays title and authors face on screen
     scribeHeader(title,0); scribeHeaderRight(name); 
-    fill(white); image(myFace, width-myFace.width/2,25,myFace.width/2,myFace.height/2); 
+    fill(white); // image(myFace, width-myFace.width/2,25,myFace.width/2,myFace.height/2); 
     }
 void displayFooter() { // Displays help text at the bottom
     scribeFooter(guide,1); 
     scribeFooter(menu,0); 
     }
 
-String title ="6491 P2 2015: 3D swirl", name ="Jarek Rossignac",
+String title ="6491 P2 2015: 3D swirl", name ="Ashwin Kachhara | Bhuvanesh Shanmuga Sundaram",
        menu="?:help, !:picture, ~:(start/stop)capture, space:rotate, s/wheel:closer, f/F:refocus, a:anim, #:quit",
-       guide="CURVES x/z:select&edit, e:exchange, q/p:copy, l/L: load, w/W:write to file"; // user's guide
+       guide="1/2:Initial Size 3/4:Final Size x/z:move point along XYplane/Zaxiz e/r:rotate about z/x axis"; // user's guide
