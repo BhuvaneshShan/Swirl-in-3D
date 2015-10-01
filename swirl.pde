@@ -249,4 +249,4 @@ void displayFooter() { // Displays help text at the bottom
 
 String title ="6491 P2 2015: 3D swirl", name ="Ashwin Kachhara | Bhuvanesh Shanmuga Sundaram",
        menu="?:help, !:picture, ~:(start/stop)capture, space:rotate, s/wheel:closer, f/F:refocus, a:anim, #:quit",
-       guide="1/2:Initial Size 3/4:Final Size x/z:move point along XYplane/Zaxiz e/r:rotate about z/x axis"; // user's guide
+       guide="1/2:Initial Size 3/4:Final Size x/z:move point along XY plane or Z axis e/r:rotate about z or x axis"; // user's guide
